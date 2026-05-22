@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Date & Code - Premium 3D Slot Portfolio</title>
+    <title>Date & Code - True 3D Slot Portfolio</title>
     <style>
         :root {
             --primary: #ff2a5f;
@@ -123,7 +123,7 @@
             border: 3px solid #1f1f29;
             position: relative;
             overflow: hidden;
-            perspective: 1200px; /* عمق الـ 3D */
+            perspective: 1200px; /* عمق الـ 3D لجعل الأسطوانة دائرية ومجسمة بالكامل */
         }
 
         /* تأثيرات الإضاءة والظلال على أسطوانة القمار */
@@ -149,10 +149,10 @@
             height: 100%;
             position: absolute;
             transform-style: preserve-3d;
-            transition: transform 0.1s linear;
             display: flex;
             justify-content: center;
             align-items: center;
+            will-change: transform;
         }
 
         /* الكروت الفردية داخل الأسطوانة */
@@ -160,7 +160,7 @@
             position: absolute;
             width: 85%;
             height: 110px;
-            background: linear-gradient(145deg, rgba(35, 35, 47, 0.9) 0%, rgba(20, 20, 26, 0.9) 100%);
+            background: linear-gradient(145deg, rgba(35, 35, 47, 0.95) 0%, rgba(20, 20, 26, 0.95) 100%);
             border: 1.5px solid rgba(255,255,255,0.08);
             border-radius: 12px;
             padding: 12px;
@@ -172,7 +172,7 @@
             user-select: none;
             cursor: pointer;
             box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
-            transition: border-color 0.3s, box-shadow 0.3s;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         .slot-card.active-focus {
@@ -197,11 +197,6 @@
         .slot-card .card-icon {
             font-size: 1.4rem;
             margin-bottom: 6px;
-        }
-
-        /* تأثير الضبابية أثناء الدوران السريع لواقعية سينمائية */
-        .blur-effect {
-            filter: blur(4px);
         }
 
         /* ذراع شد الماكينة (الحمراء) */
@@ -424,7 +419,7 @@
     </div>
 
     <script>
-        // مصفوفة الروابط الـ 8 من شغلك مع إضافة حساب الإنستجرام المخصص بالكامل
+        // مصفوفة الروابط الـ 8 من شغلك
         const projects = [
             { title: "Sophia Luxury Showcase", desc: "Premium interactive experience tailored for international elite audiences.", url: "https://alexander-sophia.vercel.app", icon: "✨" },
             { title: "3D Floral Experience", desc: "Immersive high-end 3D graphics and smooth motion design.", url: "https://flowers-weld-three.vercel.app", icon: "🌸" },
@@ -443,17 +438,22 @@
         const closePopup = document.getElementById('closePopup');
 
         const totalCards = projects.length;
-        const radius = 150; // نصف قطر الأسطوانة بالبكسل لتوزيع الكروت بشكل دائري عميق
-        let currentRotation = 0;
+        const radius = 160; // المسافة من السنتر لبره لضبط عمق الدائرة الـ 3D بالملي
+        let currentRotation = 0; 
         let isSpinning = false;
+        
+        // متغيرات محرك الفيزيكس للدوران الحقيقي السلس
+        let velocity = 0;
+        let targetRotation = 0;
+        let animationFrameId = null;
 
-        // بناء الكروت وتوزيعها في الفضاء ثلاثي الأبعاد بزاويا دقيقة جداً
+        // بناء الكروت وتوزيعها دائرياً بزوايا 3D حقيقية
         function initCylinder() {
             projects.forEach((proj, idx) => {
                 const card = document.createElement('div');
                 card.className = 'slot-card';
                 
-                // حساب زاوية كل كارت بناءً على رقمه في المصفوفة
+                // تقسيم الـ 360 درجة بالتساوي على الـ 8 كروت
                 const angle = (idx * 360) / totalCards;
                 card.style.transform = `rotateX(${angle}deg) translateZ(${radius}px)`;
                 
@@ -463,7 +463,6 @@
                     <p>Interactive Demo</p>
                 `;
                 
-                // لو العميل ضغط على الكارت يدوي يفتح البروجكت علطول
                 card.addEventListener('click', () => {
                     if(!isSpinning) showResult(idx);
                 });
@@ -473,10 +472,10 @@
             updateFocusCard();
         }
 
-        // تمييز الكارت اللي واقف في المنتصف حالياً باللون الذهبي
+        // تحديد وتفتيح الكارت المواجه تماماً للعين
         function updateFocusCard() {
             const cards = document.querySelectorAll('.slot-card');
-            // حساب الكارت المواجه للعين بناءً على زاوية الدوران الحالية
+            // تحويل الزاوية لقيمة موجبة بين 0 و 360 درجة
             const normalizedRotation = ((currentRotation % 360) + 360) % 360;
             const activeIndex = Math.round((360 - normalizedRotation) / (360 / totalCards)) % totalCards;
             
@@ -490,61 +489,63 @@
             return activeIndex;
         }
 
-        // دالة تدوير المحرك والأنيميشن التفاعلي للـ Slot Machine
+        // محرك الفيزيكس الأساسي للدوران والتباطؤ التدريجي
+        function updatePhysicsLoop() {
+            if (!isSpinning) return;
+
+            // تطبيق الدوران بناءً على السرعة الحالية
+            currentRotation += velocity;
+            cylinder.style.transform = `rotateX(${currentRotation}deg)`;
+            updateFocusCard();
+
+            if (velocity > 0.5) {
+                // أثناء الدوران السريع: تباطؤ ميكانيكي بفعل الاحتكاك
+                velocity *= 0.975; 
+                animationFrameId = requestAnimationFrame(updatePhysicsLoop);
+            } else {
+                // الماكينة بدأت تقف تماماً: عمل Snap ناعم على أقرب كارت فائز بالملي
+                const anglePerCard = 360 / totalCards;
+                const closestTarget = Math.round(currentRotation / anglePerCard) * anglePerCard;
+                
+                // أنيميشن القفل المغناطيسي الأخير (Spring Effect)
+                function snapToTarget() {
+                    const diff = closestTarget - currentRotation;
+                    if (Math.abs(diff) > 0.1) {
+                        currentRotation += diff * 0.12; // سرعة الانجذاب للكارت
+                        cylinder.style.transform = `rotateX(${currentRotation}deg)`;
+                        updateFocusCard();
+                        requestAnimationFrame(snapToTarget);
+                    } else {
+                        currentRotation = closestTarget;
+                        cylinder.style.transform = `rotateX(${currentRotation}deg)`;
+                        const finalIndex = updateFocusCard();
+                        isSpinning = false;
+                        setTimeout(() => showResult(finalIndex), 400);
+                    }
+                }
+                snapToTarget();
+            }
+        }
+
+        // بدء الإطلاق عند شد الذراع أو ضغط الزرار
         function spinMachine() {
             if (isSpinning) return;
             isSpinning = true;
 
-            // تفعيل حركة الذراع الميكانيكية
+            // أنيميشن ميكانيكا الذراع الحمراء
             handleContainer.classList.add('pulling');
             setTimeout(() => handleContainer.classList.remove('pulling'), 200);
 
-            // إضافة تأثير الضبابية السينمائي (Motion Blur) للكروت أثناء السرعة القصوى
-            cylinder.classList.add('blur-effect');
+            // إعطاء دفعة سرعة ابتدائية قوية جداً (سرعة انطلاق الفيزيكس)
+            // نختار لفة عشوائية سريعة بين 20 لـ 30 درجة في الفريم الواحدة
+            velocity = 25 + Math.random() * 10; 
 
-            // اختيار عشوائي ذكي للمشروع الفائز
-            const winnerIndex = Math.floor(Math.random() * totalCards);
-            
-            // حساب لفة عشوائية ضخمة (بين 4 لـ 6 لفات كاملة) ثم الوقوف بدقة على الكارت الفائز
-            const targetAngle = (totalCards - winnerIndex) * (360 / totalCards);
-            const extraSpins = 360 * (4 + Math.floor(Math.random() * 3)); 
-            const finalRotation = extraSpins + targetAngle;
-
-            const startRotation = currentRotation;
-            const duration = 3500; // مدة دوران الماكينة (3.5 ثانية ممتعة)
-            const startTime = performance.now();
-
-            // دالة تنعيم الحركة التدريجية (Cubic Out Easing) لمحاكاة توقف الماكينة الحقيقي
-            function animateSpin(now) {
-                const elapsed = now - startTime;
-                const t = Math.min(elapsed / duration, 1);
-                
-                // زاوية التباطؤ التدريجي
-                const easeOutQuad = 1 - Math.pow(1 - t, 4); 
-                currentRotation = startRotation + (finalRotation - startRotation) * easeOutQuad;
-                
-                cylinder.style.transform = `rotateX(${currentRotation}deg)`;
-                updateFocusCard();
-
-                // إزالة الضبابية تدريجياً مع تباطؤ السرعة في آخر ثانية
-                if (t > 0.75) {
-                    cylinder.classList.remove('blur-effect');
-                }
-
-                if (t < 1) {
-                    requestAnimationFrame(animateSpin);
-                } else {
-                    // الماكينة توقفت تماماً
-                    isSpinning = false;
-                    const finalIndex = updateFocusCard();
-                    setTimeout(() => showResult(finalIndex), 300);
-                }
-            }
-
-            requestAnimationFrame(animateSpin);
+            // تشغيل محرك الدوران لايف
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            animationFrameId = requestAnimationFrame(updatePhysicsLoop);
         }
 
-        // إظهار نتيجة السحب في الكارت الـ Pop-up
+        // إظهار البوب آب الفاخر
         function showResult(index) {
             const project = projects[index];
             document.getElementById('projectTitle').innerText = project.title;
@@ -553,15 +554,16 @@
             popupOverlay.classList.add('show');
         }
 
-        // تفعيل أزرار الحدث الشد والضغط
+        // ربط الأحداث والـ Listeners
         spinBtn.addEventListener('click', spinMachine);
         handleContainer.addEventListener('click', spinMachine);
         
         closePopup.addEventListener('click', () => {
+            popupOverlay.classList.remove('remove'); // تنظيف
             popupOverlay.classList.remove('show');
         });
 
-        // تشغيل البناء فور تحميل الصفحة
+        // تشغيل الموقع
         initCylinder();
     </script>
 </body>
