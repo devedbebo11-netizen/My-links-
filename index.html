@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Date & Code - Premium 3D Slot Portfolio</title>
+    <style>
+        :root {
+            --primary: #ff2a5f;
+            --primary-glow: rgba(255, 42, 95, 0.5);
+            --gold: #ffd700;
+            --gold-glow: rgba(255, 215, 0, 0.4);
+            --bg: #0a0a0c;
+            --machine-bg: #15151a;
+            --card-bg: rgba(30, 30, 40, 0.75);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            color: #fff;
+        }
+
+        /* محاكي شاشة الآيفون لضمان تجربة موبايل مثالية */
+        .iphone-container {
+            width: 100%;
+            max-width: 412px;
+            height: 100vh;
+            max-height: 892px;
+            background: radial-gradient(circle at top, #1a1a24 0%, var(--bg) 100%);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 40px 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* الجزء العلوي - شاشة العنوان النيون */
+        .header-panel {
+            text-align: center;
+            width: 100%;
+            background: linear-gradient(145deg, #1e1e26, #121216);
+            border: 2px solid var(--primary);
+            border-radius: 16px;
+            padding: 15px;
+            box-shadow: 0 0 15px var(--primary-glow), inset 0 0 10px rgba(0,0,0,0.8);
+            z-index: 10;
+        }
+
+        .header-panel h1 {
+            font-size: 1.6rem;
+            color: #fff;
+            text-shadow: 0 0 8px var(--primary-glow);
+            letter-spacing: 1px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .header-panel p {
+            font-size: 0.8rem;
+            color: var(--gold);
+            text-shadow: 0 0 5px var(--gold-glow);
+            margin-top: 4px;
+        }
+
+        /* منطقة ماكينة السلوتس الرئيسية */
+        .slot-machine-wrapper {
+            position: relative;
+            width: 100%;
+            height: 420px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 5;
+        }
+
+        /* هيكل الماكينة */
+        .machine-housing {
+            width: 85%;
+            height: 100%;
+            background: linear-gradient(135deg, #22222b 0%, #111115 100%);
+            border: 4px solid #333344;
+            border-radius: 24px;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.7), inset 0 0 20px rgba(0,0,0,0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .machine-housing::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 20px;
+            border: 2px solid var(--gold);
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        /* نافذة العرض والـ 3D Viewport */
+        .view-window {
+            width: 90%;
+            height: 80%;
+            background: #070709;
+            border-radius: 16px;
+            border: 3px solid #1f1f29;
+            position: relative;
+            overflow: hidden;
+            perspective: 1200px; /* عمق الـ 3D */
+        }
+
+        /* تأثيرات الإضاءة والظلال على أسطوانة القمار */
+        .window-shadow-top {
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 35%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0) 100%);
+            z-index: 4;
+            pointer-events: none;
+        }
+
+        .window-shadow-bottom {
+            position: absolute;
+            bottom: 0; left: 0; right: 0; height: 35%;
+            background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0) 100%);
+            z-index: 4;
+            pointer-events: none;
+        }
+
+        /* الأسطوانة ثلاثية الأبعاد الدوارة */
+        .cylinder-3d {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            transform-style: preserve-3d;
+            transition: transform 0.1s linear;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* الكروت الفردية داخل الأسطوانة */
+        .slot-card {
+            position: absolute;
+            width: 85%;
+            height: 110px;
+            background: linear-gradient(145deg, rgba(35, 35, 47, 0.9) 0%, rgba(20, 20, 26, 0.9) 100%);
+            border: 1.5px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            backface-visibility: hidden;
+            user-select: none;
+            cursor: pointer;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .slot-card.active-focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 15px var(--gold-glow), inset 0 0 10px rgba(0,0,0,0.3);
+        }
+
+        .slot-card h3 {
+            font-size: 0.95rem;
+            color: #fff;
+            margin-bottom: 4px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .slot-card p {
+            font-size: 0.7rem;
+            color: #8a8a9e;
+            text-align: center;
+        }
+
+        .slot-card .card-icon {
+            font-size: 1.4rem;
+            margin-bottom: 6px;
+        }
+
+        /* تأثير الضبابية أثناء الدوران السريع لواقعية سينمائية */
+        .blur-effect {
+            filter: blur(4px);
+        }
+
+        /* ذراع شد الماكينة (الحمراء) */
+        .handle-container {
+            position: absolute;
+            right: -12px;
+            top: 25%;
+            width: 40px;
+            height: 200px;
+            cursor: pointer;
+        }
+
+        .handle-base {
+            width: 24px;
+            height: 40px;
+            background: #444454;
+            border-radius: 0 8px 8px 0;
+            position: absolute;
+            left: 0; top: 70px;
+            box-shadow: inset -2px 0 5px rgba(0,0,0,0.5);
+        }
+
+        .handle-rod {
+            width: 8px;
+            height: 100px;
+            background: linear-gradient(to right, #888, #ddd, #555);
+            position: absolute;
+            left: 8px;
+            bottom: 90px;
+            transform-origin: bottom center;
+            transform: rotate(0deg);
+            transition: transform 0.15s ease-out;
+            border-radius: 4px;
+        }
+
+        .handle-ball {
+            width: 28px;
+            height: 28px;
+            background: radial-gradient(circle at 30% 30%, #ff4b72 0%, #b3002d 100%);
+            border-radius: 50%;
+            position: absolute;
+            top: -24px;
+            left: -10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5), 0 0 8px var(--primary-glow);
+        }
+
+        /* أنيميشن شد الذراع */
+        .handle-container.pulling .handle-rod {
+            transform: rotateX(60deg) scaleY(0.7);
+        }
+
+        /* كارت النتيجة الـ Pop-up الفاخر */
+        .popup-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(5, 5, 7, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 20;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .popup-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .result-popup {
+            width: 85%;
+            background: linear-gradient(145deg, #1c1c24 0%, #0f0f13 100%);
+            border: 2px solid var(--gold);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.8), 0 0 25px var(--gold-glow);
+            transform: scale(0.7) translateY(30px);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .popup-overlay.show .result-popup {
+            transform: scale(1) translateY(0);
+        }
+
+        .popup-badge {
+            background: rgba(255, 215, 0, 0.1);
+            color: var(--gold);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            display: inline-block;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .result-popup h2 {
+            font-size: 1.4rem;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .result-popup p {
+            font-size: 0.85rem;
+            color: #a0a0b5;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .action-btn {
+            display: block;
+            width: 100%;
+            background: linear-gradient(90deg, var(--primary) 0%, #e60039 100%);
+            color: white;
+            text-decoration: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 1rem;
+            box-shadow: 0 4px 15px var(--primary-glow);
+            transition: transform 0.2s;
+            margin-bottom: 10px;
+        }
+
+        .action-btn:active {
+            transform: scale(0.97);
+        }
+
+        .close-btn {
+            background: transparent;
+            border: none;
+            color: #6e6e82;
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        /* الجزء السفلي - زرار الدوران السريع يدوياً */
+        .control-panel {
+            width: 100%;
+            z-index: 10;
+        }
+
+        .spin-trigger-btn {
+            width: 100%;
+            background: linear-gradient(145deg, #22222b, #15151a);
+            border: 2px solid var(--gold);
+            color: var(--gold);
+            padding: 16px;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4), inset 0 0 10px rgba(255,215,0,0.05);
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .spin-trigger-btn:active {
+            transform: scale(0.98);
+            background: #1c1c24;
+            box-shadow: 0 0 10px var(--gold-glow);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="iphone-container">
+        
+        <div class="header-panel">
+            <h1>Date & Code</h1>
+            <p>SPIN THE ARCADE TO UNLOCK MY WORK</p>
+        </div>
+
+        <div class="slot-machine-wrapper">
+            <div class="machine-housing">
+                <div class="view-window">
+                    <div class="window-shadow-top"></div>
+                    <div class="window-shadow-bottom"></div>
+                    
+                    <div class="cylinder-3d" id="cylinder">
+                        </div>
+                </div>
+            </div>
+
+            <div class="handle-container" id="handleContainer">
+                <div class="handle-base"></div>
+                <div class="handle-rod" id="handleRod">
+                    <div class="handle-ball"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <button class="spin-trigger-btn" id="spinBtn">
+                <span>🎰</span> JACKPOT SPIN
+            </button>
+        </div>
+
+        <div class="popup-overlay" id="popupOverlay">
+            <div class="result-popup">
+                <span class="popup-badge">MATCH FOUND!</span>
+                <h2 id="projectTitle">Project Name</h2>
+                <p id="projectDesc">A premium interactive custom web application built with high performance and smooth animations.</p>
+                <a href="#" target="_blank" class="action-btn" id="projectLink">VISIT PROJECT</a>
+                <button class="close-btn" id="closePopup">Spin Again</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // مصفوفة الروابط الـ 8 من شغلك مع إضافة حساب الإنستجرام المخصص بالكامل
+        const projects = [
+            { title: "Sophia Luxury Showcase", desc: "Premium interactive experience tailored for international elite audiences.", url: "https://alexander-sophia.vercel.app", icon: "✨" },
+            { title: "3D Floral Experience", desc: "Immersive high-end 3D graphics and smooth motion design.", url: "https://flowers-weld-three.vercel.app", icon: "🌸" },
+            { title: "Creative Concept V1", desc: "Cutting-edge interface focusing on responsive micro-interactions.", url: "https://new-one-8xh6.vercel.app", icon: "🚀" },
+            { title: "Premium Brand Platform", desc: "Ultra-fast deployment featuring high converting minimalist design.", url: "https://manu-had.vercel.app", icon: "💼" },
+            { title: "Luxury Digital Invitation", desc: "Gamified custom 3D wedding experience with interactive storytelling.", url: "https://wedding-tawny-ten-89.vercel.app", icon: "💍" },
+            { title: "David Creative Portfolio", desc: "Advanced web structure emphasizing premium typography and layout.", url: "https://david-web-cas.vercel.app", icon: "🎨" },
+            { title: "Interactive Concept V2", desc: "Sophisticated front-end architectures optimized for mobile viewports.", url: "https://david-and-his-project.vercel.app", icon: "⚡" },
+            { title: "Connect On Instagram", desc: "Let's build your next premium 3D project. Drop a message directly on Instagram DM.", url: "https://instagram.com/Loveframe_eg", icon: "📸" }
+        ];
+
+        const cylinder = document.getElementById('cylinder');
+        const handleContainer = document.getElementById('handleContainer');
+        const spinBtn = document.getElementById('spinBtn');
+        const popupOverlay = document.getElementById('popupOverlay');
+        const closePopup = document.getElementById('closePopup');
+
+        const totalCards = projects.length;
+        const radius = 150; // نصف قطر الأسطوانة بالبكسل لتوزيع الكروت بشكل دائري عميق
+        let currentRotation = 0;
+        let isSpinning = false;
+
+        // بناء الكروت وتوزيعها في الفضاء ثلاثي الأبعاد بزاويا دقيقة جداً
+        function initCylinder() {
+            projects.forEach((proj, idx) => {
+                const card = document.createElement('div');
+                card.className = 'slot-card';
+                
+                // حساب زاوية كل كارت بناءً على رقمه في المصفوفة
+                const angle = (idx * 360) / totalCards;
+                card.style.transform = `rotateX(${angle}deg) translateZ(${radius}px)`;
+                
+                card.innerHTML = `
+                    <div class="card-icon">${proj.icon}</div>
+                    <h3>${proj.title}</h3>
+                    <p>Interactive Demo</p>
+                `;
+                
+                // لو العميل ضغط على الكارت يدوي يفتح البروجكت علطول
+                card.addEventListener('click', () => {
+                    if(!isSpinning) showResult(idx);
+                });
+
+                cylinder.appendChild(card);
+            });
+            updateFocusCard();
+        }
+
+        // تمييز الكارت اللي واقف في المنتصف حالياً باللون الذهبي
+        function updateFocusCard() {
+            const cards = document.querySelectorAll('.slot-card');
+            // حساب الكارت المواجه للعين بناءً على زاوية الدوران الحالية
+            const normalizedRotation = ((currentRotation % 360) + 360) % 360;
+            const activeIndex = Math.round((360 - normalizedRotation) / (360 / totalCards)) % totalCards;
+            
+            cards.forEach((card, idx) => {
+                if (idx === activeIndex) {
+                    card.classList.add('active-focus');
+                } else {
+                    card.classList.remove('active-focus');
+                }
+            });
+            return activeIndex;
+        }
+
+        // دالة تدوير المحرك والأنيميشن التفاعلي للـ Slot Machine
+        function spinMachine() {
+            if (isSpinning) return;
+            isSpinning = true;
+
+            // تفعيل حركة الذراع الميكانيكية
+            handleContainer.classList.add('pulling');
+            setTimeout(() => handleContainer.classList.remove('pulling'), 200);
+
+            // إضافة تأثير الضبابية السينمائي (Motion Blur) للكروت أثناء السرعة القصوى
+            cylinder.classList.add('blur-effect');
+
+            // اختيار عشوائي ذكي للمشروع الفائز
+            const winnerIndex = Math.floor(Math.random() * totalCards);
+            
+            // حساب لفة عشوائية ضخمة (بين 4 لـ 6 لفات كاملة) ثم الوقوف بدقة على الكارت الفائز
+            const targetAngle = (totalCards - winnerIndex) * (360 / totalCards);
+            const extraSpins = 360 * (4 + Math.floor(Math.random() * 3)); 
+            const finalRotation = extraSpins + targetAngle;
+
+            const startRotation = currentRotation;
+            const duration = 3500; // مدة دوران الماكينة (3.5 ثانية ممتعة)
+            const startTime = performance.now();
+
+            // دالة تنعيم الحركة التدريجية (Cubic Out Easing) لمحاكاة توقف الماكينة الحقيقي
+            function animateSpin(now) {
+                const elapsed = now - startTime;
+                const t = Math.min(elapsed / duration, 1);
+                
+                // زاوية التباطؤ التدريجي
+                const easeOutQuad = 1 - Math.pow(1 - t, 4); 
+                currentRotation = startRotation + (finalRotation - startRotation) * easeOutQuad;
+                
+                cylinder.style.transform = `rotateX(${currentRotation}deg)`;
+                updateFocusCard();
+
+                // إزالة الضبابية تدريجياً مع تباطؤ السرعة في آخر ثانية
+                if (t > 0.75) {
+                    cylinder.classList.remove('blur-effect');
+                }
+
+                if (t < 1) {
+                    requestAnimationFrame(animateSpin);
+                } else {
+                    // الماكينة توقفت تماماً
+                    isSpinning = false;
+                    const finalIndex = updateFocusCard();
+                    setTimeout(() => showResult(finalIndex), 300);
+                }
+            }
+
+            requestAnimationFrame(animateSpin);
+        }
+
+        // إظهار نتيجة السحب في الكارت الـ Pop-up
+        function showResult(index) {
+            const project = projects[index];
+            document.getElementById('projectTitle').innerText = project.title;
+            document.getElementById('projectDesc').innerText = project.desc;
+            document.getElementById('projectLink').href = project.url;
+            popupOverlay.classList.add('show');
+        }
+
+        // تفعيل أزرار الحدث الشد والضغط
+        spinBtn.addEventListener('click', spinMachine);
+        handleContainer.addEventListener('click', spinMachine);
+        
+        closePopup.addEventListener('click', () => {
+            popupOverlay.classList.remove('show');
+        });
+
+        // تشغيل البناء فور تحميل الصفحة
+        initCylinder();
+    </script>
+</body>
+</html>
